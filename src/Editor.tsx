@@ -158,5 +158,5 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
 
 function offsetToLineCol(state: EditorState, offset: number): { line: number; col: number } {
   const line = state.doc.lineAt(offset);
-  return { line: line.number, col: offset - line.from + 1 };
+  return { line: line.number, col: offset - line.from };
 }
