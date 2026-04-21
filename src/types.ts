@@ -32,3 +32,9 @@ export interface Hint {
   difficulty: "beginner" | "intermediate" | "advanced";
   actionLabel: string;
 }
+
+export interface HintError {
+  status: number;
+  message: string;
+  detail?: string;
+}

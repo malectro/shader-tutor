@@ -1,17 +1,20 @@
-import type { Hint } from "./types";
+import type { Hint, HintError } from "./types";
 
 interface Props {
   hints: Hint[];
   loading: boolean;
+  error: HintError | null;
+  onDismissError: () => void;
 }
 
-export function HintPanel({ hints, loading }: Props) {
+export function HintPanel({ hints, loading, error, onDismissError }: Props) {
   return (
     <div className="hint-pane">
       <div className="hint-header">Hints</div>
       <div className="hint-list">
+        {error && <ErrorBanner error={error} onDismiss={onDismissError} />}
         {loading && <div className="hint-loading">Thinking…</div>}
-        {hints.length === 0 && !loading && (
+        {hints.length === 0 && !loading && !error && (
           <div className="hint-empty">
             Click or select something in the editor.
             <br />
@@ -26,6 +29,29 @@ export function HintPanel({ hints, loading }: Props) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function ErrorBanner({ error, onDismiss }: { error: HintError; onDismiss: () => void }) {
+  const title =
+    error.status === 429
+      ? "Rate limited"
+      : error.status === 401 || error.status === 403
+        ? "API auth problem"
+        : error.status === 0
+          ? "Network error"
+          : error.message;
+  return (
+    <div className="hint-error">
+      <div className="hint-error-header">
+        <span className="hint-error-title">{title}</span>
+        <button className="hint-error-dismiss" onClick={onDismiss} aria-label="Dismiss">
+          ×
+        </button>
+      </div>
+      {error.detail && <div className="hint-error-detail">{error.detail}</div>}
+      {error.status !== 0 && <div className="hint-error-status">HTTP {error.status}</div>}
     </div>
   );
 }

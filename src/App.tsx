@@ -2,12 +2,13 @@ import { useState } from "react";
 import { Editor } from "./Editor";
 import { HintPanel } from "./HintPanel";
 import { SAMPLE_CODE } from "./sample";
-import type { Hint, MouseAction } from "./types";
+import type { Hint, HintError, MouseAction } from "./types";
 
 export default function App() {
   const [doc, setDoc] = useState(SAMPLE_CODE);
   const [hints, setHints] = useState<Hint[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<HintError | null>(null);
 
   const handleAction = async (action: MouseAction) => {
     setLoading(true);
@@ -17,11 +18,29 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        let body: { error?: string; detail?: string } = {};
+        try {
+          body = await res.json();
+        } catch {
+          // ignore: non-JSON error body
+        }
+        setError({
+          status: res.status,
+          message: body.error ?? `Request failed (HTTP ${res.status})`,
+          detail: body.detail,
+        });
+        return;
+      }
       const hint: Hint = await res.json();
       setHints((prev) => [{ ...hint, id: crypto.randomUUID() }, ...prev].slice(0, 10));
+      setError(null);
     } catch (err) {
-      console.error("hint request failed", err);
+      setError({
+        status: 0,
+        message: "Network error",
+        detail: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       setLoading(false);
     }
@@ -56,7 +75,12 @@ export default function App() {
           <Editor doc={doc} onDocChange={setDoc} onAction={handleAction} />
         </div>
       </div>
-      <HintPanel hints={hints} loading={loading} />
+      <HintPanel
+        hints={hints}
+        loading={loading}
+        error={error}
+        onDismissError={() => setError(null)}
+      />
     </div>
   );
 }

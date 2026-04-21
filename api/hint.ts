@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { clientIp, errorJson, json, readJson } from "./_lib/http";
 
 const client = new Anthropic();
 
@@ -48,7 +48,7 @@ function buildUserMessage(action: ActionPayload): string {
   return parts.join("\n");
 }
 
-// Extremely simple in-memory rate limit (per serverless instance).
+// In-memory rate limit (per serverless instance).
 const bucket = new Map<string, { count: number; resetAt: number }>();
 const LIMIT_PER_MIN = 30;
 
@@ -63,23 +63,19 @@ function rateLimited(ip: string): boolean {
   return entry.count > LIMIT_PER_MIN;
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== "POST") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
+export async function POST(req: Request): Promise<Response> {
+  if (rateLimited(clientIp(req))) {
+    return errorJson(429, "Rate limited");
   }
 
-  const ip = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || "unknown";
-  if (rateLimited(ip)) {
-    res.status(429).json({ error: "Rate limited" });
-    return;
+  let payload: { action?: ActionPayload };
+  try {
+    payload = await readJson(req);
+  } catch {
+    return errorJson(400, "Invalid JSON body");
   }
-
-  const { action } = req.body as { action: ActionPayload };
-  if (!action) {
-    res.status(400).json({ error: "Missing action" });
-    return;
-  }
+  const action = payload.action;
+  if (!action) return errorJson(400, "Missing action");
 
   try {
     const response = await client.messages.create({
@@ -97,14 +93,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const block = response.content.find((b) => b.type === "text");
     if (!block || block.type !== "text") {
-      res.status(502).json({ error: "No text in response" });
-      return;
+      return errorJson(502, "No text in response");
     }
 
-    const hint = JSON.parse(block.text);
-    res.status(200).json(hint);
+    try {
+      return json(JSON.parse(block.text));
+    } catch {
+      return errorJson(502, "Model returned non-JSON", block.text.slice(0, 400));
+    }
   } catch (err) {
     console.error("hint generation failed", err);
-    res.status(500).json({ error: "Hint generation failed" });
+    const status = err instanceof Anthropic.APIError ? err.status ?? 500 : 500;
+    const detail =
+      err instanceof Anthropic.APIError
+        ? err.message
+        : err instanceof Error
+          ? err.message
+          : String(err);
+    return errorJson(status, "Hint generation failed", detail);
   }
 }

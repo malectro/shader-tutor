@@ -129,3 +129,52 @@ html, body, #root {
   margin-bottom: 10px;
   font-style: italic;
 }
+
+.hint-error {
+  background: #3a1f1f;
+  border: 1px solid #6b2a2a;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  color: #ffb4b4;
+}
+
+.hint-error-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.hint-error-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.hint-error-dismiss {
+  background: transparent;
+  border: none;
+  color: #ffb4b4;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.hint-error-dismiss:hover {
+  color: #fff;
+}
+
+.hint-error-detail {
+  font-size: 12px;
+  color: #e4a5a5;
+  margin-top: 6px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.hint-error-status {
+  font-size: 11px;
+  color: #a07777;
+  margin-top: 4px;
+}
