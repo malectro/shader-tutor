@@ -7,6 +7,7 @@ interface Props {
   onDismissError: () => void;
   enabled: boolean;
   onToggleEnabled: () => void;
+  onTry: (hint: Hint) => void;
 }
 
 export function HintPanel({
@@ -16,6 +17,7 @@ export function HintPanel({
   onDismissError,
   enabled,
   onToggleEnabled,
+  onTry,
 }: Props) {
   return (
     <div className="hint-pane">
@@ -47,7 +49,18 @@ export function HintPanel({
           <div key={hint.id} className="hint-card">
             <div className="hint-command">{hint.command}</div>
             <div className="hint-explanation">{hint.explanation}</div>
-            <div className="hint-action">{hint.actionLabel}</div>
+            <div className="hint-card-footer">
+              <span className="hint-action">{hint.actionLabel}</span>
+              {hint.before && (
+                <button
+                  className="hint-try"
+                  onClick={() => onTry(hint)}
+                  title="Reset cursor and try the vim command yourself"
+                >
+                  Try it
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>

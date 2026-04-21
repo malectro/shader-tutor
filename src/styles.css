@@ -167,9 +167,35 @@ html, body, #root {
 .hint-action {
   font-size: 11px;
   color: var(--fg-subtle);
-  margin-top: 6px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.hint-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.hint-try {
+  background: var(--bg-input);
+  color: var(--fg-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 3px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.hint-try:hover {
+  background: var(--bg-input-hover);
+}
+
+.hint-try:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .hint-empty {

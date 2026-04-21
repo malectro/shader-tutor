@@ -31,6 +31,8 @@ export interface Hint {
   explanation: string;
   difficulty: "beginner" | "intermediate" | "advanced";
   actionLabel: string;
+  /** Cursor location before the mouse action that produced this hint. */
+  before?: { line: number; col: number };
 }
 
 export interface HintError {

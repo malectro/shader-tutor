@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Editor } from "./Editor";
+import { useRef, useState } from "react";
+import { Editor, type EditorHandle } from "./Editor";
 import { HintPanel } from "./HintPanel";
 import { SAMPLE_CODE } from "./sample";
 import type { Hint, HintError, MouseAction } from "./types";
@@ -9,7 +9,8 @@ export default function App() {
   const [hints, setHints] = useState<Hint[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<HintError | null>(null);
-  const [enabled, setEnabled] = useState(true);
+  const [enabled, setEnabled] = useState(false);
+  const editorRef = useRef<EditorHandle>(null);
 
   const handleAction = async (action: MouseAction) => {
     if (!enabled) return;
@@ -35,7 +36,9 @@ export default function App() {
         return;
       }
       const hint: Hint = await res.json();
-      setHints((prev) => [{ ...hint, id: crypto.randomUUID() }, ...prev].slice(0, 10));
+      setHints((prev) =>
+        [{ ...hint, id: crypto.randomUUID(), before: action.before }, ...prev].slice(0, 10)
+      );
       setError(null);
     } catch (err) {
       setError({
@@ -46,6 +49,12 @@ export default function App() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTry = (hint: Hint) => {
+    if (!hint.before) return;
+    editorRef.current?.setCursor(hint.before.line, hint.before.col);
+    editorRef.current?.focus();
   };
 
   const handleOpenFile = async (file: File) => {
@@ -69,12 +78,12 @@ export default function App() {
               }}
             />
           </label>
-          <span style={{ color: "#888", fontSize: 12 }}>
+          <span style={{ color: "var(--fg-subtle)", fontSize: 12 }}>
             Use the mouse — we'll teach you the vim keystroke.
           </span>
         </div>
         <div className="editor-container">
-          <Editor doc={doc} onDocChange={setDoc} onAction={handleAction} />
+          <Editor ref={editorRef} doc={doc} onDocChange={setDoc} onAction={handleAction} />
         </div>
       </div>
       <HintPanel
@@ -84,6 +93,7 @@ export default function App() {
         onDismissError={() => setError(null)}
         enabled={enabled}
         onToggleEnabled={() => setEnabled((v) => !v)}
+        onTry={handleTry}
       />
     </div>
   );

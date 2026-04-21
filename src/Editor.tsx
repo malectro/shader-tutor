@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { EditorState } from "@codemirror/state";
 import {
   EditorView,
@@ -18,11 +18,39 @@ interface Props {
   onAction: (action: MouseAction) => void;
 }
 
+export interface EditorHandle {
+  setCursor(line: number, col: number): void;
+  focus(): void;
+}
+
 const CONTEXT_RADIUS = 3;
 
-export function Editor({ doc, onDocChange, onAction }: Props) {
+export const Editor = forwardRef<EditorHandle, Props>(function Editor(
+  { doc, onDocChange, onAction },
+  ref
+) {
   const parentRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      setCursor(line: number, col: number) {
+        const view = viewRef.current;
+        if (!view) return;
+        const totalLines = view.state.doc.lines;
+        const clampedLine = Math.min(Math.max(1, line), totalLines);
+        const lineObj = view.state.doc.line(clampedLine);
+        const clampedCol = Math.min(Math.max(1, col), lineObj.length + 1);
+        const pos = lineObj.from + (clampedCol - 1);
+        view.dispatch({ selection: { anchor: pos, head: pos } });
+      },
+      focus() {
+        viewRef.current?.focus();
+      },
+    }),
+    []
+  );
 
   // Track cursor before mouse action so we can report before/after.
   const preMouseCursor = useRef<{ line: number; col: number } | null>(null);
@@ -143,7 +171,7 @@ export function Editor({ doc, onDocChange, onAction }: Props) {
   }, [doc]);
 
   return <div ref={parentRef} style={{ height: "100%" }} />;
-}
+});
 
 function offsetToLineCol(state: EditorState, offset: number): { line: number; col: number } {
   const line = state.doc.lineAt(offset);
