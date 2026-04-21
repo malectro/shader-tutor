@@ -64,20 +64,46 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       const after = offsetToLineCol(state, sel.head);
       const before = preMouseCursor.current ?? after;
 
+      const afterLineObj = state.doc.line(after.line);
+      const afterLineText = afterLineObj.text;
+      const beforeLineText =
+        before.line === after.line ? afterLineText : state.doc.line(before.line).text;
+
+      const charAt =
+        after.col < afterLineText.length
+          ? afterLineText.slice(after.col, after.col + 1)
+          : "";
+      const wordAt = extractWordAt(afterLineText, after.col);
+
       let selection;
       if (!sel.empty) {
         const anchor = offsetToLineCol(state, sel.anchor);
         const head = offsetToLineCol(state, sel.head);
+        const charBeforeAnchor =
+          sel.anchor > 0 ? state.sliceDoc(sel.anchor - 1, sel.anchor) : "";
+        const charAfterHead =
+          sel.head < state.doc.length ? state.sliceDoc(sel.head, sel.head + 1) : "";
         selection = {
           text: state.sliceDoc(sel.from, sel.to),
           anchorLine: anchor.line,
           anchorCol: anchor.col,
           headLine: head.line,
           headCol: head.col,
+          charBeforeAnchor,
+          charAfterHead,
         };
       }
 
-      onActionRef.current({ kind, before, after, selection });
+      onActionRef.current({
+        kind,
+        before,
+        after,
+        beforeLineText,
+        afterLineText,
+        charAt,
+        wordAt,
+        selection,
+      });
     };
 
     const mouseDownHandler = EditorView.domEventHandlers({
@@ -159,4 +185,14 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
 function offsetToLineCol(state: EditorState, offset: number): { line: number; col: number } {
   const line = state.doc.lineAt(offset);
   return { line: line.number, col: offset - line.from };
+}
+
+function extractWordAt(line: string, col: number): string {
+  const isWordChar = (c: string | undefined) => (c ? /[\w$]/.test(c) : false);
+  if (col < 0 || col > line.length) return "";
+  let start = col;
+  let end = col;
+  while (start > 0 && isWordChar(line[start - 1])) start--;
+  while (end < line.length && isWordChar(line[end])) end++;
+  return line.slice(start, end);
 }
