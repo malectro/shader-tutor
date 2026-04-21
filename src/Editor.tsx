@@ -1,6 +1,12 @@
 import { useEffect, useRef } from "react";
 import { EditorState } from "@codemirror/state";
-import { EditorView, keymap, lineNumbers, highlightActiveLine } from "@codemirror/view";
+import {
+  EditorView,
+  drawSelection,
+  highlightActiveLine,
+  keymap,
+  lineNumbers,
+} from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { javascript } from "@codemirror/lang-javascript";
 import { vim } from "@replit/codemirror-vim";
@@ -91,6 +97,7 @@ export function Editor({ doc, onDocChange, onAction }: Props) {
         vim(),
         lineNumbers(),
         highlightActiveLine(),
+        drawSelection(),
         history(),
         keymap.of([...defaultKeymap, ...historyKeymap]),
         javascript(),
@@ -100,10 +107,17 @@ export function Editor({ doc, onDocChange, onAction }: Props) {
             onDocChange(update.state.doc.toString());
           }
         }),
-        EditorView.theme({
-          "&": { height: "100%" },
-          ".cm-scroller": { fontFamily: "ui-monospace, SF Mono, Menlo, monospace" },
-        }, { dark: true }),
+        EditorView.theme(
+          {
+            "&": { height: "100%" },
+            ".cm-scroller": { fontFamily: "ui-monospace, SF Mono, Menlo, monospace" },
+            "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection": {
+              background: "var(--selection-bg)",
+            },
+            ".cm-cursor, .cm-dropCursor": { borderLeftColor: "var(--accent)" },
+          },
+          { dark: true }
+        ),
       ],
     });
 

@@ -1,0 +1,52 @@
+/*
+ * Design tokens.
+ *
+ * Edit this file to restyle the app. Every color, radius, and font
+ * elsewhere in the CSS is wired to a variable defined here, so
+ * changes propagate without touching component styles.
+ */
+
+:root {
+  /* Backgrounds — three depths plus input surfaces */
+  --bg-app: #1e1e1e;           /* root body */
+  --bg-surface: #252525;       /* toolbar, cards */
+  --bg-sidebar: #181818;       /* hint pane (deeper than app) */
+  --bg-input: #3a3a3a;         /* buttons, toggle tracks */
+  --bg-input-hover: #4a4a4a;
+  --bg-active: #4a4a4a;
+
+  /* Foregrounds — primary to faintest */
+  --fg-primary: #e4e4e4;
+  --fg-muted: #c4c4c4;
+  --fg-subtle: #888888;
+  --fg-faint: #666666;
+  --fg-inverse: #ffffff;
+
+  /* Borders */
+  --border-subtle: #333333;
+  --border-strong: #4a4a4a;
+
+  /* Accent — used for vim commands, cursor, focus rings */
+  --accent: #7cc4ff;
+
+  /* Editor text selection background */
+  --selection-bg: #2d4a6b;
+
+  /* Semantic — success (toggle on) */
+  --success: #2d7a4e;
+
+  /* Semantic — danger (error banner) */
+  --danger-bg: #3a1f1f;
+  --danger-border: #6b2a2a;
+  --danger-fg: #ffb4b4;
+  --danger-fg-muted: #e4a5a5;
+  --danger-fg-subtle: #a07777;
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
