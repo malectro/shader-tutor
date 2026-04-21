@@ -21,8 +21,6 @@ export interface MouseAction {
     headLine: number;
     headCol: number;
   };
-  contextLines: string[];
-  contextStartLine: number;
 }
 
 export interface Hint {

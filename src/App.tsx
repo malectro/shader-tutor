@@ -19,7 +19,7 @@ export default function App() {
       const res = await fetch("/api/hint", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action }),
+        body: JSON.stringify({ action, doc }),
       });
       if (!res.ok) {
         let body: { error?: string; detail?: string } = {};

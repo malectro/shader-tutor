@@ -23,8 +23,6 @@ export interface EditorHandle {
   focus(): void;
 }
 
-const CONTEXT_RADIUS = 3;
-
 export const Editor = forwardRef<EditorHandle, Props>(function Editor(
   { doc, onDocChange, onAction },
   ref
@@ -65,14 +63,6 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
       const sel = state.selection.main;
       const after = offsetToLineCol(state, sel.head);
       const before = preMouseCursor.current ?? after;
-      const doc = state.doc;
-
-      const startLine = Math.max(1, after.line - CONTEXT_RADIUS);
-      const endLine = Math.min(doc.lines, after.line + CONTEXT_RADIUS);
-      const contextLines: string[] = [];
-      for (let i = startLine; i <= endLine; i++) {
-        contextLines.push(doc.line(i).text);
-      }
 
       let selection;
       if (!sel.empty) {
@@ -87,14 +77,7 @@ export const Editor = forwardRef<EditorHandle, Props>(function Editor(
         };
       }
 
-      onActionRef.current({
-        kind,
-        before,
-        after,
-        selection,
-        contextLines,
-        contextStartLine: startLine,
-      });
+      onActionRef.current({ kind, before, after, selection });
     };
 
     const mouseDownHandler = EditorView.domEventHandlers({
