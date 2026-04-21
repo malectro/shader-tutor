@@ -9,8 +9,10 @@ export default function App() {
   const [hints, setHints] = useState<Hint[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<HintError | null>(null);
+  const [enabled, setEnabled] = useState(true);
 
   const handleAction = async (action: MouseAction) => {
+    if (!enabled) return;
     setLoading(true);
     try {
       const res = await fetch("/api/hint", {
@@ -80,6 +82,8 @@ export default function App() {
         loading={loading}
         error={error}
         onDismissError={() => setError(null)}
+        enabled={enabled}
+        onToggleEnabled={() => setEnabled((v) => !v)}
       />
     </div>
   );

@@ -5,20 +5,42 @@ interface Props {
   loading: boolean;
   error: HintError | null;
   onDismissError: () => void;
+  enabled: boolean;
+  onToggleEnabled: () => void;
 }
 
-export function HintPanel({ hints, loading, error, onDismissError }: Props) {
+export function HintPanel({
+  hints,
+  loading,
+  error,
+  onDismissError,
+  enabled,
+  onToggleEnabled,
+}: Props) {
   return (
     <div className="hint-pane">
-      <div className="hint-header">Hints</div>
+      <div className="hint-header">
+        <span>Hints</span>
+        <label className="hint-toggle" title="Turn automatic hints on/off">
+          <input type="checkbox" checked={enabled} onChange={onToggleEnabled} />
+          <span className="hint-toggle-track" aria-hidden />
+          <span className="hint-toggle-label">{enabled ? "On" : "Off"}</span>
+        </label>
+      </div>
       <div className="hint-list">
         {error && <ErrorBanner error={error} onDismiss={onDismissError} />}
         {loading && <div className="hint-loading">Thinking…</div>}
         {hints.length === 0 && !loading && !error && (
           <div className="hint-empty">
-            Click or select something in the editor.
-            <br />
-            Vim keystroke suggestions will appear here.
+            {enabled ? (
+              <>
+                Click or select something in the editor.
+                <br />
+                Vim keystroke suggestions will appear here.
+              </>
+            ) : (
+              <>Automatic hints are off. Toggle above to resume.</>
+            )}
           </div>
         )}
         {hints.map((hint) => (
