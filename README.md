@@ -17,6 +17,58 @@ retain the information in the lectures. I similarly was told my multiple music i
 to learn songs by ear rather than looking up the tabs and notation. This was extremely
 slow but rewarding.
 
+## Principles and Choices
+### Principles
+- The app should build understanding rather than do the user's work for them.
+- Understanding is built through friction and doing, but people will bounce if the friction isn't
+  fun.
+- The app should present attainable goals with quick feedback.
+
+### Choices
+- The app should never write code for the user, but it should happily go deep on any topic.
+- Code should be compiled as the user types.
+- The user should be able to get quick answers to questions about anything in the code by
+  selecting them.
+- Lessons should be step-by-step with each step demonstrating only a couple concepts.
+- Lessons should lead to aesthetically pleasing results.
+
+
+## Design
+
+The Shader Tutor leans much more to the education than the productivity side, but if I
+could say "Show me how to build a ripple shader for the background of my website that
+responds to mouse clicks" and get a step-by-step lesson, I could see myself using
+something like this on the job. Even before LLMs were important to my professional
+workflow, I occassionally found myself doing something the "hard way" just so I wouldn't
+have to Google for it the next time. Sometimes this even meant reading code from
+StackOverflow and then writing it myself.
+
+
+## Expansion
+
+The nice thing about the Shader Tutor is that it's not at all limited to GLSL. It could be
+easily tweaked to work in different development environments. I could also see it
+working in other text-based systems like writing and math. It could possibly generate
+tutorials for non-text based things, but we'd lose the feedback loop if it didn't have an
+underlying parseable data structure.
+
+
+## Measuring Success
+
+Success of the Shader Tutor couldn't simply come down to usage numbers. If it's just fun
+and not useful then I've made a useful business but failed as an educator. That said, it
+could be difficult to measure how much users are actually learning. The simplest thing
+would be to ask them. A more accurate method might be testing them with challenges that
+don't provide any assistence, but in the age of LLMs, this could easily be gamed. A
+combination of usage numbers and survey data would be a good heuristic at least.
+
+## Scalability
+
+Because the Shader Tutor can run as a lambda, it's very scalable. Obviously we'd need to
+work out how to support millions of users making request to the Claude API – either by
+letting them supply their own tokens or entering into an enterprise contract and charging
+users subscriptions (which would mean some sort of account management).
+
 ## Design Process
 
 I spent the first half hour brainstorming and jotting down stray thoughts. Some initial
@@ -69,7 +121,7 @@ concept with a static one. This sounded fair to me.
 
 After the initial prompt and code generation it was simply a matter of testing and
 polishing the experience. It was clear to me fairly quickly while going through the first
-couple tutotorial steps, that this was fun and useful. WebGL has a great feedback loop,
+couple tutorial steps, that this was fun and useful. WebGL has a great feedback loop,
 and Claude's tutoring was helpful and relevant to each individual step.
 
 The last few things I did were:
@@ -83,31 +135,3 @@ Some things I'd like to still add:
 - The ability to prompt lessons.
 - A lesson index page
 
-
-## Thoughts on Design
-
-The Shader Tutor leans much more to the education than the productivity side, but if I
-could say "Show me how to build a ripple shader for the background of my website that
-responds to mouse clicks" and get a step-by-step lesson, I could see myself using
-something like this on the job. Even before LLMs were important to my professional
-workflow, I occassionally found myself doing something the "hard way" just so I wouldn't
-have to Google for it the next time. Sometimes this even meant reading code from
-StackOverflow and then writing it myself.
-
-The nice thing about the Shader Tutor is that it's not at all limited to GLSL. It could be
-easily tweaked to work in different development environments. I could also see it
-working in other text-based systems like writing and math. It could possibly generate
-tutorials for non-text based things, but we'd lose the feedback loop if it didn't have an
-underlying parseable data structure.
-
-Success of the Shader Tutor couldn't simply come down to usage numbers. If it's just fun
-and not useful then I've made a useful business but failed as an educator. That said, it
-could be difficult to measure how much users are actually learning. The simplest thing
-would be to ask them. A more accurate method might be testing them with challenges that
-don't provide any assistence, but in the age of LLMs, this could easily be gamed. A
-combination of usage numbers and survey data would be a good heuristic at least.
-
-Because the Shader Tutor can run as a lambda, it's very scalable. Obviously we'd need to
-work out how to support millions of users making request to the Claude API – either by
-letting them supply their own tokens or entering into an enterprise contract and charging
-users subscriptions (which would mean some sort of account management).
