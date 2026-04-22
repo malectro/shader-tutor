@@ -34,6 +34,15 @@ export function TutorPanel({
   });
   const [input, setInput] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-grow the textarea to fit its content (up to a sensible cap).
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    ta.style.height = `${Math.min(ta.scrollHeight, 160)}px`;
+  }, [input]);
 
   const goalSrc = useMemo(
     () => renderToDataURL(step.referenceGlsl, 320, 320, step.goalTime ?? 0),
@@ -112,11 +121,18 @@ export function TutorPanel({
           handleSend(input);
         }}
       >
-        <input
-          type="text"
+        <textarea
+          ref={textareaRef}
           placeholder="Ask the tutor…"
           value={input}
+          rows={1}
           onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              handleSend(input);
+            }
+          }}
           disabled={streaming}
         />
         <button type="submit" disabled={streaming || !input.trim()}>

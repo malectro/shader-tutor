@@ -353,12 +353,13 @@ html, body, #root {
 .tutor-input {
   display: flex;
   gap: 8px;
+  align-items: flex-end;
   padding: 10px 14px 12px;
   border-top: 1px solid var(--border-subtle);
   background: var(--bg-surface);
 }
 
-.tutor-input input {
+.tutor-input textarea {
   flex: 1;
   background: var(--bg-input);
   color: var(--fg-primary);
@@ -367,9 +368,14 @@ html, body, #root {
   padding: 6px 10px;
   font-size: 13px;
   font-family: var(--font-sans);
+  line-height: 1.4;
+  resize: none;
+  overflow-y: auto;
+  min-height: 30px;
+  max-height: 160px;
 }
 
-.tutor-input input:focus {
+.tutor-input textarea:focus {
   outline: 2px solid var(--accent);
   outline-offset: -1px;
 }
