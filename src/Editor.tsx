@@ -33,6 +33,26 @@ interface Props {
   doc: string;
   vimMode: boolean;
   onDocChange: (doc: string) => void;
+  /**
+   * Called whenever the cursor / selection settles on a token. Empty string
+   * when there's nothing askable (cursor in whitespace, no selection).
+   */
+  onTokenChange?: (token: string) => void;
+}
+
+const TOKEN_CHAR = /[A-Za-z0-9_]/;
+
+function tokenAt(doc: string, pos: number): string {
+  if (pos < 0 || pos > doc.length) return "";
+  let start = pos;
+  let end = pos;
+  while (start > 0 && TOKEN_CHAR.test(doc[start - 1]!)) start--;
+  while (end < doc.length && TOKEN_CHAR.test(doc[end]!)) end++;
+  if (start === end) return "";
+  const token = doc.slice(start, end);
+  // Skip pure-numeric literals — "0.25" isn't a useful "ask about" target.
+  if (/^[0-9.]+$/.test(token)) return "";
+  return token;
 }
 
 /**
@@ -42,12 +62,14 @@ interface Props {
  *
  * Vim mode can be toggled without rebuilding the editor via a Compartment.
  */
-export function Editor({ doc, vimMode, onDocChange }: Props) {
+export function Editor({ doc, vimMode, onDocChange, onTokenChange }: Props) {
   const parentRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const vimCompartment = useRef(new Compartment());
   const onDocChangeRef = useRef(onDocChange);
   onDocChangeRef.current = onDocChange;
+  const onTokenChangeRef = useRef(onTokenChange);
+  onTokenChangeRef.current = onTokenChange;
 
   useEffect(() => {
     if (!parentRef.current) return;
@@ -66,6 +88,17 @@ export function Editor({ doc, vimMode, onDocChange }: Props) {
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             onDocChangeRef.current(update.state.doc.toString());
+          }
+          if (update.selectionSet || update.docChanged) {
+            const cb = onTokenChangeRef.current;
+            if (cb) {
+              const sel = update.state.selection.main;
+              const docText = update.state.doc.toString();
+              const token = sel.empty
+                ? tokenAt(docText, sel.head)
+                : docText.slice(sel.from, sel.to).trim();
+              cb(token.length > 0 && token.length < 60 ? token : "");
+            }
           }
         }),
         EditorView.theme(

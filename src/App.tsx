@@ -13,6 +13,7 @@ export default function App() {
   const [code, setCode] = useState(() => load(`code.${lesson.id}`, lesson.starterGlsl));
   const [shaderError, setShaderError] = useState<string | null>(null);
   const [vimMode, setVimMode] = useState(() => load("vim", false));
+  const [selectedToken, setSelectedToken] = useState("");
 
   const step = lesson.steps[stepIndex]!;
 
@@ -48,7 +49,12 @@ export default function App() {
           </button>
         </div>
         <div className="editor-container">
-          <Editor doc={code} vimMode={vimMode} onDocChange={setCode} />
+          <Editor
+            doc={code}
+            vimMode={vimMode}
+            onDocChange={setCode}
+            onTokenChange={setSelectedToken}
+          />
         </div>
       </div>
 
@@ -71,6 +77,7 @@ export default function App() {
             setStepIndex((i) => Math.min(lesson.steps.length - 1, i + 1))
           }
           getCode={getCode}
+          selectedToken={selectedToken}
         />
       </div>
     </div>

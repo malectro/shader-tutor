@@ -350,6 +350,18 @@ html, body, #root {
   cursor: default;
 }
 
+.tutor-quick-token {
+  background: var(--bg-active) !important;
+  color: var(--fg-primary) !important;
+  border-color: var(--accent) !important;
+}
+
+.tutor-quick-token code {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  margin-left: 2px;
+}
+
 .tutor-input {
   display: flex;
   gap: 8px;

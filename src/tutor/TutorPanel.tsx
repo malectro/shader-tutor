@@ -10,11 +10,13 @@ interface Props {
   onPrevStep: () => void;
   onNextStep: () => void;
   getCode: () => string;
+  /** Identifier currently under the editor cursor / selection, or "". */
+  selectedToken: string;
 }
 
 const QUICK_ASKS = [
   "Check my work",
-  "Give me a hint",
+  "What are some useful built-ins for this step?",
   "Explain my current code",
   "Why isn't anything rendering?",
 ];
@@ -26,6 +28,7 @@ export function TutorPanel({
   onPrevStep,
   onNextStep,
   getCode,
+  selectedToken,
 }: Props) {
   const { messages, streaming, error, send } = useTutorChat({
     lessonId: lesson.id,
@@ -107,6 +110,18 @@ export function TutorPanel({
       </div>
 
       <div className="tutor-quick">
+        {selectedToken && (
+          <button
+            className="tutor-quick-token"
+            onClick={() =>
+              handleSend(`What does \`${selectedToken}\` do here?`)
+            }
+            disabled={streaming}
+            title={`Ask about ${selectedToken}`}
+          >
+            Ask about <code>{selectedToken}</code>
+          </button>
+        )}
         {QUICK_ASKS.map((q) => (
           <button key={q} onClick={() => handleSend(q)} disabled={streaming}>
             {q}
