@@ -29,12 +29,11 @@ function apiDevPlugin(): Plugin {
 
         try {
           const mod = await server.ssrLoadModule(`/api/${name}.ts`);
-          const method = (req.method ?? "GET").toUpperCase();
-          const handler = mod[method];
+          const handler = mod.default?.fetch;
           if (typeof handler !== "function") {
-            res.statusCode = 405;
+            res.statusCode = 500;
             res.setHeader("content-type", "application/json");
-            res.end(JSON.stringify({ error: "Method not allowed" }));
+            res.end(JSON.stringify({ error: "Function has no default.fetch export" }));
             return;
           }
           const request = await nodeReqToFetchRequest(req);

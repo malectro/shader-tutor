@@ -70,7 +70,8 @@ function sseEvent(data: unknown): string {
   return `data: ${JSON.stringify(data)}\n\n`;
 }
 
-export async function POST(req: Request): Promise<Response> {
+async function handle(req: Request): Promise<Response> {
+  if (req.method !== "POST") return errorJson(405, "Method not allowed");
   if (rateLimited(clientIp(req))) {
     return errorJson(429, "Rate limited");
   }
@@ -169,3 +170,5 @@ export async function POST(req: Request): Promise<Response> {
     },
   });
 }
+
+export default { fetch: handle };
