@@ -2,18 +2,33 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import dotenv from "dotenv";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 
 dotenv.config({ path: ".env.local" });
 
-// Dev-only plugin: route /api/hint to the same handler Vercel runs in prod
-// (Web Fetch API style: exported POST(Request) -> Response).
-function apiHintDevPlugin(): Plugin {
+/**
+ * Dev-only adapter: routes any /api/<name> request to the matching
+ * api/<name>.ts file, invoking the exported POST/GET/etc. handler exactly
+ * the way Vercel's Fluid runtime does in production.
+ *
+ * Streams ReadableStream bodies straight through so SSE works locally.
+ */
+function apiDevPlugin(): Plugin {
   return {
-    name: "api-hint-dev",
+    name: "api-dev",
     configureServer(server) {
-      server.middlewares.use("/api/hint", async (req, res) => {
+      server.middlewares.use(async (req, res, next) => {
+        const url = req.url ?? "";
+        if (!url.startsWith("/api/")) return next();
+
+        const name = url.slice("/api/".length).split("?")[0]!.split("/")[0];
+        if (!name) return next();
+        const file = resolve(process.cwd(), `api/${name}.ts`);
+        if (!existsSync(file)) return next();
+
         try {
-          const mod = await server.ssrLoadModule("/api/hint.ts");
+          const mod = await server.ssrLoadModule(`/api/${name}.ts`);
           const method = (req.method ?? "GET").toUpperCase();
           const handler = mod[method];
           if (typeof handler !== "function") {
@@ -26,7 +41,7 @@ function apiHintDevPlugin(): Plugin {
           const response: Response = await handler(request);
           await writeFetchResponseToNode(response, res);
         } catch (err) {
-          console.error("dev api/hint error", err);
+          console.error(`dev /api/${name} error`, err);
           if (!res.headersSent) {
             res.statusCode = 500;
             res.setHeader("content-type", "application/json");
@@ -66,11 +81,22 @@ async function writeFetchResponseToNode(response: Response, res: ServerResponse)
     res.end();
     return;
   }
-  const buf = Buffer.from(await response.arrayBuffer());
-  res.end(buf);
+  const reader = response.body.getReader();
+  res.flushHeaders?.();
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      res.write(Buffer.from(value));
+      // Force flush for SSE.
+      (res as ServerResponse & { flush?: () => void }).flush?.();
+    }
+  } finally {
+    res.end();
+  }
 }
 
 export default defineConfig({
-  plugins: [react(), apiHintDevPlugin()],
+  plugins: [react(), apiDevPlugin()],
   server: { port: 5173 },
 });

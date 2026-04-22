@@ -1,100 +1,76 @@
-import { useRef, useState } from "react";
-import { Editor, type EditorHandle } from "./Editor";
-import { HintPanel } from "./HintPanel";
-import { SAMPLE_CODE } from "./sample";
-import type { Hint, HintError, MouseAction } from "./types";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Editor } from "./Editor";
+import { ShaderCanvas } from "./shader/ShaderCanvas";
+import { TutorPanel } from "./tutor/TutorPanel";
+import { lessons } from "../lessons";
+
+const VIM_KEY = "shader-tutor.vim";
 
 export default function App() {
-  const [doc, setDoc] = useState(SAMPLE_CODE);
-  const [hints, setHints] = useState<Hint[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<HintError | null>(null);
-  const [enabled, setEnabled] = useState(false);
-  const editorRef = useRef<EditorHandle>(null);
+  const lesson = lessons[0]!;
+  const [stepIndex, setStepIndex] = useState(0);
+  const [code, setCode] = useState(lesson.starterGlsl);
+  const [shaderError, setShaderError] = useState<string | null>(null);
+  const [vimMode, setVimMode] = useState(
+    () => localStorage.getItem(VIM_KEY) === "1"
+  );
 
-  const handleAction = async (action: MouseAction) => {
-    if (!enabled) return;
-    setLoading(true);
-    try {
-      const res = await fetch("/api/hint", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, doc }),
-      });
-      if (!res.ok) {
-        let body: { error?: string; detail?: string } = {};
-        try {
-          body = await res.json();
-        } catch {
-          // ignore: non-JSON error body
-        }
-        setError({
-          status: res.status,
-          message: body.error ?? `Request failed (HTTP ${res.status})`,
-          detail: body.detail,
-        });
-        return;
-      }
-      const hint: Hint = await res.json();
-      setHints((prev) =>
-        [{ ...hint, id: crypto.randomUUID(), before: action.before }, ...prev].slice(0, 10)
-      );
-      setError(null);
-    } catch (err) {
-      setError({
-        status: 0,
-        message: "Network error",
-        detail: err instanceof Error ? err.message : String(err),
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  const step = lesson.steps[stepIndex]!;
 
-  const handleTry = (hint: Hint) => {
-    if (!hint.before) return;
-    editorRef.current?.setCursor(hint.before.line, hint.before.col);
-    editorRef.current?.focus();
-  };
+  useEffect(() => {
+    localStorage.setItem(VIM_KEY, vimMode ? "1" : "0");
+  }, [vimMode]);
 
-  const handleOpenFile = async (file: File) => {
-    const text = await file.text();
-    setDoc(text);
-  };
+  const codeRef = useRef(code);
+  codeRef.current = code;
+  const getCode = useCallback(() => codeRef.current, []);
+
+  const resetCode = () => setCode(lesson.starterGlsl);
 
   return (
     <div className="app">
       <div className="editor-pane">
         <div className="toolbar">
-          <strong>VIM Instructor</strong>
-          <label className="file-btn">
-            Open file
+          <strong>Shader Tutor</strong>
+          <label className="vim-toggle">
             <input
-              type="file"
-              style={{ display: "none" }}
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleOpenFile(file);
-              }}
+              type="checkbox"
+              checked={vimMode}
+              onChange={(e) => setVimMode(e.target.checked)}
             />
+            <span className="vim-toggle-track" aria-hidden />
+            <span>vim</span>
           </label>
-          <span style={{ color: "var(--fg-subtle)", fontSize: 12 }}>
-            Use the mouse — we'll teach you the vim keystroke.
-          </span>
+          <button onClick={resetCode} className="reset-btn">
+            Reset code
+          </button>
         </div>
         <div className="editor-container">
-          <Editor ref={editorRef} doc={doc} onDocChange={setDoc} onAction={handleAction} />
+          <Editor doc={code} vimMode={vimMode} onDocChange={setCode} />
         </div>
       </div>
-      <HintPanel
-        hints={hints}
-        loading={loading}
-        error={error}
-        onDismissError={() => setError(null)}
-        enabled={enabled}
-        onToggleEnabled={() => setEnabled((v) => !v)}
-        onTry={handleTry}
-      />
+
+      <div className="preview-pane">
+        <div className="preview-canvas">
+          <ShaderCanvas fragSrc={code} onError={setShaderError} />
+          {shaderError && (
+            <div className="shader-error-overlay">
+              <div className="shader-error-title">Shader error</div>
+              <pre>{shaderError}</pre>
+            </div>
+          )}
+        </div>
+        <TutorPanel
+          lesson={lesson}
+          step={step}
+          stepIndex={stepIndex}
+          onPrevStep={() => setStepIndex((i) => Math.max(0, i - 1))}
+          onNextStep={() =>
+            setStepIndex((i) => Math.min(lesson.steps.length - 1, i + 1))
+          }
+          getCode={getCode}
+        />
+      </div>
     </div>
   );
 }
