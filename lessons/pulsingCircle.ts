@@ -6,9 +6,17 @@ uniform vec2 u_resolution;
 uniform float u_time;
 
 void main() {
-  // Your code goes here. Start by turning gl_FragCoord into a normalized
-  // 0..1 coordinate, then work toward a circle that pulses with time.
+  // Your code goes here. Start by changing the gl_FragColor from
+  // black to green.
   gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+}
+`;
+
+const STEP_0_REF = `precision mediump float;
+uniform vec2 u_resolution;
+uniform float u_time;
+void main() {
+  gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
 }
 `;
 
@@ -75,9 +83,23 @@ export const pulsingCircle: Lesson = {
   starterGlsl: STARTER,
   steps: [
     {
+      id: "color",
+      title: "",
+      goal: "Set the entire canvas to green using the gl_FragColor as the shader output. gl_FragColor is a 4-dimensional vector that holds rgb and alpha color values. Color components are floating point numbers from 0 to 1.",
+      referenceGlsl: STEP_0_REF,
+      goalTime: 0,
+      concepts: [
+        "gl_FragColor can be set to any color using a 4-dimensional vector",
+        "setting it to vec4(0.0, 1.0, 0.0, 1.0) sets the entire canvas to green",
+      ],
+    },
+    {
       id: "normalize",
       title: "Normalize the coordinates",
-      goal: "Turn gl_FragCoord into a 0..1 UV and visualize it (red = x, green = y).",
+      goal: `gl_FragCoord gives us the coordinate in fragment space of the current fragment. To make a gradient, we can map the fragment position using u_resolution onto a 0..1 value so that 0 is one side of the canvas and 1 is the other. If we map both xy, we can set x = red and y = green.
+
+Tip: Vectors support multidimensional operations. e.g. uv1.xy * uv2.xy, uv1.xy * 2.0
+      `,
       referenceGlsl: STEP_1_REF,
       goalTime: 0,
       concepts: [
