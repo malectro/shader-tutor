@@ -94,7 +94,7 @@ export const pulsingCircle: Lesson = {
       goalTime: 0,
       concepts: [
         "subtracting 0.5 * u_resolution centers the origin",
-        "dividing by u_resolution.y (not .xy) keeps the unit length square regardless of aspect",
+        "dividing by a dimension of u_resolution (commonly .y) keeps unit length consistent across aspect ratios",
         "length(uv) is the distance from (0,0)",
       ],
     },

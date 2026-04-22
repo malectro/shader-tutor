@@ -9,7 +9,25 @@ import {
 } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { cpp } from "@codemirror/lang-cpp";
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { tags as t } from "@lezer/highlight";
 import { vim } from "@replit/codemirror-vim";
+
+// Tokens that show up in GLSL: keyword (void/if/for), typeName (vec2/float),
+// number, string, comment, function-call name, operator, punctuation.
+const glslHighlight = HighlightStyle.define([
+  { tag: t.keyword, color: "#c792ea" },
+  { tag: [t.typeName, t.standard(t.typeName)], color: "#82aaff" },
+  { tag: t.number, color: "#f78c6c" },
+  { tag: t.string, color: "#c3e88d" },
+  { tag: t.comment, color: "#5c6773", fontStyle: "italic" },
+  { tag: t.function(t.variableName), color: "#82aaff" },
+  { tag: t.variableName, color: "#e4e4e4" },
+  { tag: t.operator, color: "#89ddff" },
+  { tag: t.punctuation, color: "#89ddff" },
+  { tag: t.bracket, color: "#bbbbbb" },
+  { tag: t.processingInstruction, color: "#c792ea" },
+]);
 
 interface Props {
   doc: string;
@@ -44,6 +62,7 @@ export function Editor({ doc, vimMode, onDocChange }: Props) {
         history(),
         keymap.of([...defaultKeymap, ...historyKeymap]),
         cpp(),
+        syntaxHighlighting(glslHighlight),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             onDocChangeRef.current(update.state.doc.toString());

@@ -3,29 +3,31 @@ import { Editor } from "./Editor";
 import { ShaderCanvas } from "./shader/ShaderCanvas";
 import { TutorPanel } from "./tutor/TutorPanel";
 import { lessons } from "../lessons";
-
-const VIM_KEY = "shader-tutor.vim";
+import { load, remove, save } from "./persist";
 
 export default function App() {
   const lesson = lessons[0]!;
-  const [stepIndex, setStepIndex] = useState(0);
-  const [code, setCode] = useState(lesson.starterGlsl);
-  const [shaderError, setShaderError] = useState<string | null>(null);
-  const [vimMode, setVimMode] = useState(
-    () => localStorage.getItem(VIM_KEY) === "1"
+  const [stepIndex, setStepIndex] = useState(() =>
+    Math.min(load(`step.${lesson.id}`, 0), lesson.steps.length - 1)
   );
+  const [code, setCode] = useState(() => load(`code.${lesson.id}`, lesson.starterGlsl));
+  const [shaderError, setShaderError] = useState<string | null>(null);
+  const [vimMode, setVimMode] = useState(() => load("vim", false));
 
   const step = lesson.steps[stepIndex]!;
 
-  useEffect(() => {
-    localStorage.setItem(VIM_KEY, vimMode ? "1" : "0");
-  }, [vimMode]);
+  useEffect(() => save("vim", vimMode), [vimMode]);
+  useEffect(() => save(`code.${lesson.id}`, code), [lesson.id, code]);
+  useEffect(() => save(`step.${lesson.id}`, stepIndex), [lesson.id, stepIndex]);
 
   const codeRef = useRef(code);
   codeRef.current = code;
   const getCode = useCallback(() => codeRef.current, []);
 
-  const resetCode = () => setCode(lesson.starterGlsl);
+  const resetCode = () => {
+    setCode(lesson.starterGlsl);
+    remove(`code.${lesson.id}`);
+  };
 
   return (
     <div className="app">

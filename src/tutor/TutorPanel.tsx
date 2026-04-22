@@ -13,8 +13,8 @@ interface Props {
 }
 
 const QUICK_ASKS = [
+  "Check my work",
   "Give me a hint",
-  "What's a distance field?",
   "Explain my current code",
   "Why isn't anything rendering?",
 ];

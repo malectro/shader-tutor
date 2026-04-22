@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { load, save } from "../persist";
 
 export interface ChatMessage {
   id: string;
@@ -26,20 +27,31 @@ const MAX_MESSAGES = 20;
  * Only one request may be in-flight at a time; calling `send` again while
  * streaming aborts the previous request.
  */
+const chatKey = (lessonId: string, stepId: string) => `chat.${lessonId}.${stepId}`;
+
 export function useTutorChat({ lessonId, stepId, getCode }: UseTutorChatArgs) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() =>
+    load<ChatMessage[]>(chatKey(lessonId, stepId), [])
+  );
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Reset conversation on step change.
+  // Reload conversation from storage when (lessonId, stepId) changes.
   useEffect(() => {
     abortRef.current?.abort();
     abortRef.current = null;
-    setMessages([]);
+    setMessages(load<ChatMessage[]>(chatKey(lessonId, stepId), []));
     setStreaming(false);
     setError(null);
   }, [lessonId, stepId]);
+
+  // Persist on every message change. Skip while streaming so a half-built
+  // assistant reply doesn't get saved with empty content on the first delta.
+  useEffect(() => {
+    if (streaming) return;
+    save(chatKey(lessonId, stepId), messages);
+  }, [lessonId, stepId, messages, streaming]);
 
   const send = useCallback(
     async (text: string): Promise<SendResult> => {
