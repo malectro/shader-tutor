@@ -84,7 +84,7 @@ export const pulsingCircle: Lesson = {
   steps: [
     {
       id: "color",
-      title: "",
+      title: "Paint the canvas",
       goal: "Set the entire canvas to green using the gl_FragColor as the shader output. gl_FragColor is a 4-dimensional vector that holds rgb and alpha color values. Color components are floating point numbers from 0 to 1.",
       referenceGlsl: STEP_0_REF,
       goalTime: 0,
