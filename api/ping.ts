@@ -1,4 +1,4 @@
-import { json } from "./_lib/http";
+import { json } from "./_lib/http.js";
 
 export default {
   fetch(_req: Request): Response {

@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { clientIp, errorJson, readJson } from "./_lib/http";
-import { getLesson } from "../lessons";
-import type { LessonStep } from "../lessons/types";
+import { clientIp, errorJson, readJson } from "./_lib/http.js";
+import { getLesson } from "./_lib/lessons/index.js";
+import type { LessonStep } from "./_lib/lessons/types.js";
 
 const client = new Anthropic();
 

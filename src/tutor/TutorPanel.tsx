@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Lesson, LessonStep } from "../../lessons/types";
+import type { Lesson, LessonStep } from "../../api/_lib/lessons/types";
 import { renderToDataURL } from "../shader/renderToDataURL";
 import { useTutorChat } from "./useTutorChat";
 

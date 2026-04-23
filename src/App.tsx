@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Editor } from "./Editor";
 import { ShaderCanvas } from "./shader/ShaderCanvas";
 import { TutorPanel } from "./tutor/TutorPanel";
-import { lessons } from "../lessons";
+import { lessons } from "../api/_lib/lessons";
 import { load, remove, save } from "./persist";
 
 export default function App() {
